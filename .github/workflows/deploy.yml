@@ -1,1 +1,31 @@
+name: Deploy Databricks Notebook
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Databricks CLI
+      run: pip install databricks-cli
+
+    - name: Configure Databricks
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+      run: |
+        echo "$DATABRICKS_TOKEN" | databricks configure --token --host "$DATABRICKS_HOST"
+
+    - name: Deploy notebooks
+      run: |
+        databricks workspace import_dir \
+        notebooks \
+        /Shared/notebooks \
+        --overwrite
